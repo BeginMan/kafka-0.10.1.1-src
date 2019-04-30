@@ -49,6 +49,9 @@ case class ProduceMetadata(produceRequiredAcks: Short,
 /**
  * A delayed produce operation that can be created by the replica manager and watched
  * in the produce operation purgatory
+  *
+  * 协作ReplicaManager 延迟操作. 在消息写入Leader副本时需要DelayedProduce的协助
+  * ReplicaManager的主要功能是负责将生产者发送的消息写入Leader副本、管理Follower副本与Leader副本之间的同步以及副本角色之间的转换
  */
 class DelayedProduce(delayMs: Long,
                      produceMetadata: ProduceMetadata,

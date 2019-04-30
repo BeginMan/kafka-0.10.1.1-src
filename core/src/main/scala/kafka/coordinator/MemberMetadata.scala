@@ -34,18 +34,19 @@ case class MemberSummary(memberId: String,
  * Member metadata contains the following metadata:
  *
  * Heartbeat metadata:
- * 1. negotiated heartbeat session timeout
- * 2. timestamp of the latest heartbeat
+ * 1. negotiated heartbeat session timeout (协商心跳会话超时)
+ * 2. timestamp of the latest heartbeat (最新心跳的时间戳)
  *
  * Protocol metadata:
  * 1. the list of supported protocols (ordered by preference)
  * 2. the metadata associated with each protocol
  *
- * In addition, it also contains the following state information:
+ * In addition, it also contains the following state information:  包含状态信息
  *
  * 1. Awaiting rebalance callback: when the group is in the prepare-rebalance state,
  *                                 its rebalance callback will be kept in the metadata if the
  *                                 member has sent the join group request
+  *                                 当组处于prepare-rebalance状态时，如果成员已发送加入组请求，则其重新平衡回调将保留在元数据中
  * 2. Awaiting sync callback: when the group is in the awaiting-sync state, its sync callback
  *                            is kept in metadata until the leader provides the group assignment
  *                            and the group transitions to stable

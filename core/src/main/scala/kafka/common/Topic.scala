@@ -30,6 +30,10 @@ object Topic {
   private val maxNameLength = 249
   private val rgx = new Regex(legalChars + "+")
 
+  /**
+    * topic验证
+    * @param topic topic名称
+    */
   def validate(topic: String) {
     if (topic.length <= 0)
       throw new org.apache.kafka.common.errors.InvalidTopicException("topic name is illegal, can't be empty")

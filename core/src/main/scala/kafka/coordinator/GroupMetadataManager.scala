@@ -708,29 +708,36 @@ object GroupMetadataManager {
   private val CURRENT_OFFSET_KEY_SCHEMA_VERSION = 1.toShort
   private val CURRENT_GROUP_KEY_SCHEMA_VERSION = 2.toShort
 
+  // group-topic-partition 组合
   private val OFFSET_COMMIT_KEY_SCHEMA = new Schema(new Field("group", STRING),
     new Field("topic", STRING),
     new Field("partition", INT32))
+
   private val OFFSET_KEY_GROUP_FIELD = OFFSET_COMMIT_KEY_SCHEMA.get("group")
   private val OFFSET_KEY_TOPIC_FIELD = OFFSET_COMMIT_KEY_SCHEMA.get("topic")
   private val OFFSET_KEY_PARTITION_FIELD = OFFSET_COMMIT_KEY_SCHEMA.get("partition")
 
+  // V0 schema, offset-metadata-timestamp 组合
   private val OFFSET_COMMIT_VALUE_SCHEMA_V0 = new Schema(new Field("offset", INT64),
     new Field("metadata", STRING, "Associated metadata.", ""),
     new Field("timestamp", INT64))
+
   private val OFFSET_VALUE_OFFSET_FIELD_V0 = OFFSET_COMMIT_VALUE_SCHEMA_V0.get("offset")
   private val OFFSET_VALUE_METADATA_FIELD_V0 = OFFSET_COMMIT_VALUE_SCHEMA_V0.get("metadata")
   private val OFFSET_VALUE_TIMESTAMP_FIELD_V0 = OFFSET_COMMIT_VALUE_SCHEMA_V0.get("timestamp")
 
+  // V1 schema, offset-metadata-commit_timestamp-expire_timestamp 组合
   private val OFFSET_COMMIT_VALUE_SCHEMA_V1 = new Schema(new Field("offset", INT64),
     new Field("metadata", STRING, "Associated metadata.", ""),
     new Field("commit_timestamp", INT64),
     new Field("expire_timestamp", INT64))
+
   private val OFFSET_VALUE_OFFSET_FIELD_V1 = OFFSET_COMMIT_VALUE_SCHEMA_V1.get("offset")
   private val OFFSET_VALUE_METADATA_FIELD_V1 = OFFSET_COMMIT_VALUE_SCHEMA_V1.get("metadata")
   private val OFFSET_VALUE_COMMIT_TIMESTAMP_FIELD_V1 = OFFSET_COMMIT_VALUE_SCHEMA_V1.get("commit_timestamp")
   private val OFFSET_VALUE_EXPIRE_TIMESTAMP_FIELD_V1 = OFFSET_COMMIT_VALUE_SCHEMA_V1.get("expire_timestamp")
 
+  // group 组合
   private val GROUP_METADATA_KEY_SCHEMA = new Schema(new Field("group", STRING))
   private val GROUP_KEY_GROUP_FIELD = GROUP_METADATA_KEY_SCHEMA.get("group")
 
@@ -781,6 +788,7 @@ object GroupMetadataManager {
 
 
   // map of versions to key schemas as data types
+  // 将key模式的版本映射为数据类型, 0, 1属于用同一组合
   private val MESSAGE_TYPE_SCHEMAS = Map(
     0 -> OFFSET_COMMIT_KEY_SCHEMA,
     1 -> OFFSET_COMMIT_KEY_SCHEMA,
@@ -804,6 +812,7 @@ object GroupMetadataManager {
   private val CURRENT_OFFSET_VALUE_SCHEMA = schemaForOffset(CURRENT_OFFSET_VALUE_SCHEMA_VERSION)
   private val CURRENT_GROUP_VALUE_SCHEMA = schemaForGroup(CURRENT_GROUP_VALUE_SCHEMA_VERSION)
 
+  // 通过key 获取 schema, version 取值范围：0,1,2
   private def schemaForKey(version: Int) = {
     val schemaOpt = MESSAGE_TYPE_SCHEMAS.get(version)
     schemaOpt match {
@@ -820,6 +829,7 @@ object GroupMetadataManager {
     }
   }
 
+  // 通过version获取group的schema, version 有效取值0,1
   private def schemaForGroup(version: Int) = {
     val schemaOpt = GROUP_VALUE_SCHEMAS.get(version)
     schemaOpt match {
@@ -930,6 +940,7 @@ object GroupMetadataManager {
 
   /**
    * Decodes the offset messages' key
+    * 解析key信息
    *
    * @param buffer input byte-buffer
    * @return an GroupTopicPartition object
@@ -941,6 +952,7 @@ object GroupMetadataManager {
 
     if (version <= CURRENT_OFFSET_KEY_SCHEMA_VERSION) {
       // version 0 and 1 refer to offset
+      // 当version是0或1时，返回的是 OffsetKey对象
       val group = key.get(OFFSET_KEY_GROUP_FIELD).asInstanceOf[String]
       val topic = key.get(OFFSET_KEY_TOPIC_FIELD).asInstanceOf[String]
       val partition = key.get(OFFSET_KEY_PARTITION_FIELD).asInstanceOf[Int]
@@ -949,6 +961,7 @@ object GroupMetadataManager {
 
     } else if (version == CURRENT_GROUP_KEY_SCHEMA_VERSION) {
       // version 2 refers to offset
+      // version 是2时 返回的是 GroupMetadataKey 对象
       val group = key.get(GROUP_KEY_GROUP_FIELD).asInstanceOf[String]
 
       GroupMetadataKey(version, group)
