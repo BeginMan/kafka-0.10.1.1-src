@@ -740,6 +740,8 @@ public class KafkaProducer<K, V> implements Producer<K, V> {
     }
 
     /**
+     * 计算分区
+     * 如果不手动指定分区选择策略类，则会使用默认的分区策略类。DefaultPartitioner
      * computes partition for given record.
      * if the record has partition returns the value otherwise
      * calls configured partitioner class to compute the partition.
